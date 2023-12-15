@@ -16,6 +16,7 @@ fn main() {
     // the resulting bindings.
     let bindings = bindgen::Builder::default()
         .header("n2n/include/n2n.h")
+        .derive_default(true)
         .clang_args(["-DCMAKE_BUILD"])
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()
