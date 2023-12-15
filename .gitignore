@@ -3,5 +3,4 @@
 .vs/
 
 /target
-
-/bindings.rs
+/build
