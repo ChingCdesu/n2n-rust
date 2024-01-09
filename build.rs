@@ -8,11 +8,13 @@ use cmake::Config;
 
 fn main() {
     let mut config = Config::new(".");
-    let mut target = config.build_target("n2n");
-    if env::consts::OS == "windows" {
-        target = target.build_target("n2n_win32");
-    }
+    let target = config.build_target("n2n");
+
     let dst = target.build();
+
+    if env::consts::OS == "windows" {
+        target.build_target("n2n_win32").build();
+    }
 
     let profile = config.get_profile();
 
@@ -25,10 +27,10 @@ fn main() {
     }
 
     if env::consts::OS == "windows" {
-        println!("cargo:rustc-flags=-L{}", dst.join(format!("build/n2n/{}", profile)).display());
-        println!("cargo:rustc-flags=-L{}", dst.join(format!("build/n2n/win32/{}", profile)).display());
+        println!("cargo:rustc-link-search={}", dst.join(format!("build/n2n/{}", profile)).display());
+        println!("cargo:rustc-link-search={}", dst.join(format!("build/n2n/win32/{}", profile)).display());
     } else {
-        println!("cargo:rustc-flags=-L{}", dst.join("build/n2n").display());
+        println!("cargo:rustc-link-search={}", dst.join("build/n2n").display());
     }
 
     let mut clang_args = vec!["-DCMAKE_BUILD"];
