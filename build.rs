@@ -1,22 +1,35 @@
 extern crate bindgen;
 
 use std::env;
+use std::fmt::format;
 use std::path::PathBuf;
 
 use cmake::Config;
 
 fn main() {
     let mut config = Config::new(".");
-    let target = config.build_target("n2n");
+    let mut target = config.build_target("n2n");
+    if env::consts::OS == "windows" {
+        target = target.build_target("n2n_win32");
+    }
     let dst = target.build();
 
     let profile = config.get_profile();
 
-    let lib_dir = if env::consts::OS == "windows" { format!("build/n2n/{}", profile) } else { "build/n2n".to_string() };
-
     println!("cargo:rustc-link-search=native={}", dst.display());
+
     println!("cargo:rustc-link-lib=static=n2n");
-    println!("cargo:rustc-flags=-L{}", dst.join(lib_dir).display());
+    if env::consts::OS == "windows" {
+        println!("cargo:rustc-link-lib=static=edge_utils_win32");
+        println!("cargo:rustc-link-lib=static=n2n_win32");
+    }
+
+    if env::consts::OS == "windows" {
+        println!("cargo:rustc-flags=-L{}", dst.join(format!("build/n2n/{}", profile)).display());
+        println!("cargo:rustc-flags=-L{}", dst.join(format!("build/n2n/win32/{}", profile)).display());
+    } else {
+        println!("cargo:rustc-flags=-L{}", dst.join("build/n2n").display());
+    }
 
     let mut clang_args = vec!["-DCMAKE_BUILD"];
     if env::consts::OS == "windows" {
